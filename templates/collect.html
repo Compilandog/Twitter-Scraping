@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Coletar Tweets{% endblock %}
+{% block content %}
+<div class="card p-4 bg-white">
+<h1 class="h4 mb-4">Solicitar Relatório</h1>
+<form action="{{ url_for('collect') }}" method="post" id="collect-form">
+    <div class="mb-3">
+        <label class="form-label">Lista:
+            <select name="list" class="form-select">
+                {% for l in lists %}
+                <option value="{{ l }}" {% if l == selected %}selected{% endif %}>{{ l }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    <div class="mb-3 row">
+        <div class="col">
+            <label class="form-label">Início:</label>
+            <input type="date" name="start" value="{{ start_date or '' }}" class="form-control">
+            <input type="time" name="start_time" value="{{ start_time or '' }}" class="form-control mt-1">
+        </div>
+        <div class="col">
+            <label class="form-label">Fim:</label>
+            <input type="date" name="end" value="{{ end_date or '' }}" class="form-control">
+            <input type="time" name="end_time" value="{{ end_time or '' }}" class="form-control mt-1">
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Formato:</label>
+        <select name="format" class="form-select">
+            <option value="csv" {% if fmt == 'csv' %}selected{% endif %}>CSV</option>
+            <option value="xml" {% if fmt == 'xml' %}selected{% endif %}>XML</option>
+            <option value="pdf" {% if fmt == 'pdf' %}selected{% endif %}>PDF</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nome do arquivo:</label>
+        <input type="text" name="output" value="{{ output or 'tweets.csv' }}" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary" id="submit-btn">
+        Gerar
+        <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+    </button>
+</form>
+<p class="mt-3"><a href="{{ url_for('lists_view', list=selected) }}" class="btn btn-secondary">Voltar às Listas</a></p>
+</div>
+<script>
+document.getElementById('collect-form').addEventListener('submit', function() {
+    document.getElementById('spinner').classList.remove('d-none');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Listas{% endblock %}
+{% block content %}
+<div class="card p-4 bg-white">
+<h1 class="h4 mb-4">Gerenciar Listas</h1>
+<form action="{{ url_for('lists_view') }}" method="post" class="mb-3 d-flex">
+    <input type="hidden" name="action" value="add_list">
+    <input type="text" name="new_list" placeholder="Nova lista" class="form-control me-2">
+    <button type="submit" class="btn btn-primary">Criar Lista</button>
+</form>
+{% if lists %}
+<form method="get" action="{{ url_for('lists_view') }}" class="mb-3">
+    <label class="form-label">Selecionar lista:
+        <select name="list" onchange="this.form.submit()" class="form-select">
+            {% for l in lists %}
+            <option value="{{ l }}" {% if l == selected %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+        </select>
+    </label>
+</form>
+{% if selected %}
+<h2 class="h5">Perfis de {{ selected }}</h2>
+<ul class="list-group mb-3">
+    {% for p in profiles %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        @{{ p }}
+        <form action="{{ url_for('lists_view', list=selected) }}" method="post" class="ms-3">
+            <input type="hidden" name="action" value="remove_profile">
+            <input type="hidden" name="listname" value="{{ selected }}">
+            <input type="hidden" name="profile" value="{{ p }}">
+            <button type="submit" class="btn btn-sm btn-danger">Remover</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+<form action="{{ url_for('lists_view', list=selected) }}" method="post" class="d-flex mb-3">
+    <input type="hidden" name="action" value="add_profile">
+    <input type="hidden" name="listname" value="{{ selected }}">
+    <input type="text" name="profile" placeholder="novo perfil" class="form-control me-2">
+    <button type="submit" class="btn btn-primary">Adicionar</button>
+</form>
+<form action="{{ url_for('lists_view') }}" method="post" onsubmit="return confirm('Excluir esta lista?');" class="mb-3">
+    <input type="hidden" name="action" value="delete_list">
+    <input type="hidden" name="listname" value="{{ selected }}">
+    <button type="submit" class="btn btn-danger">Excluir lista</button>
+</form>
+{% endif %}
+{% endif %}
+<p><a href="{{ url_for('collect', list=selected) }}" class="btn btn-primary">Solicitar Relatório</a></p>
+</div>
+{% endblock %}
