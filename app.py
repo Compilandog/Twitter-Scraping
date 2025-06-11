@@ -165,6 +165,10 @@ def collect():
         summary_lines.append(f"Total: {len(df)} tweets")
         flash("; ".join(summary_lines), "success")
 
+        lgt9id-codex/criar-execução-automática-e-relatórios-dinâmicos
+        if not formats:
+            flash('Selecione ao menos um formato.', 'error')
+            
  4ibx2l-codex/criar-execução-automática-e-relatórios-dinâmicos
         if not formats:
             flash('Selecione ao menos um formato.', 'error')
@@ -193,6 +197,7 @@ def collect():
                              download_name=f"{output_filename}.pdf")
         else:
             flash('Formato desconhecido.', 'error')
+main
 main
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start_date=start_date, end_date=end_date, start_time=start_time,
