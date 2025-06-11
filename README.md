@@ -42,13 +42,6 @@ python setup_pyinstaller.py
 O executável `.exe` será criado em `dist/`.
 
 Ao executar o aplicativo, o servidor Flask será iniciado e o navegador será
-codex/criar-execução-automática-e-relatórios-dinâmicos
-
-lgt9id-codex/criar-execução-automática-e-relatórios-dinâmicos
-
-4ibx2l-codex/criar-execução-automática-e-relatórios-dinâmicos
-main
-main
 aberto automaticamente no endereço disponível. A página inicial exibe dois
 botões: **Gerenciar Listas** e **Gerar Relatório**. Primeiro crie uma ou mais
 listas de perfis acessando **Gerenciar Listas**. Em seguida, em **Gerar
@@ -56,14 +49,3 @@ Relatório**, escolha a lista desejada, defina o período (com data e hora) e
 marque os formatos desejados. Se mais de um formato for selecionado, um arquivo
 ZIP com todos eles será oferecido para download. Um resumo da coleta é exibido
 na própria página.
-codex/criar-execução-automática-e-relatórios-dinâmicos
-
-lgt9id-codex/criar-execução-automática-e-relatórios-dinâmicos
-aberto automaticamente no endereço disponível. Primeiro crie uma ou mais listas
-de perfis na tela **Listas**. Em seguida, em **Solicitar Relatório**, escolha a
-lista desejada, defina o período (com data e hora) e o formato do arquivo. O
-relatório é oferecido para download automaticamente e um resumo da coleta é
-exibido na própria página.
-main
-main
-main
