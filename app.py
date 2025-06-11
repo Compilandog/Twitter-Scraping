@@ -158,6 +158,12 @@ def collect():
         if df.empty:
             return render_template('error.html', message='Nenhum tweet encontrado para o período selecionado.')
 
+        summary_lines = []
+        for user, count in df['usuario'].value_counts().items():
+            summary_lines.append(f"{user}: {count} links")
+        summary_lines.append(f"Total: {len(df)} tweets")
+        flash("; ".join(summary_lines), "success")
+
         if fmt == 'csv':
             buf = io.StringIO()
             df.to_csv(buf, index=False)
