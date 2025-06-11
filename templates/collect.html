@@ -26,16 +26,26 @@
         </div>
     </div>
     <div class="mb-3">
-        <label class="form-label">Formato:</label>
-        <select name="format" class="form-select">
-            <option value="csv" {% if fmt == 'csv' %}selected{% endif %}>CSV</option>
-            <option value="xml" {% if fmt == 'xml' %}selected{% endif %}>XML</option>
-            <option value="pdf" {% if fmt == 'pdf' %}selected{% endif %}>PDF</option>
-        </select>
+        <label class="form-label">Formatos:</label>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="format" value="csv" id="fmt-csv"
+                   {% if 'csv' in fmt_list %}checked{% endif %}>
+            <label class="form-check-label" for="fmt-csv">CSV</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="format" value="xml" id="fmt-xml"
+                   {% if 'xml' in fmt_list %}checked{% endif %}>
+            <label class="form-check-label" for="fmt-xml">XML</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="format" value="pdf" id="fmt-pdf"
+                   {% if 'pdf' in fmt_list %}checked{% endif %}>
+            <label class="form-check-label" for="fmt-pdf">PDF</label>
+        </div>
     </div>
     <div class="mb-3">
         <label class="form-label">Nome do arquivo:</label>
-        <input type="text" name="output" value="{{ output or 'tweets.csv' }}" class="form-control">
+        <input type="text" name="output" value="{{ output or 'tweets' }}" class="form-control">
     </div>
     <button type="submit" class="btn btn-primary" id="submit-btn">
         Gerar
