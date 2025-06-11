@@ -165,8 +165,40 @@ def collect():
         summary_lines.append(f"Total: {len(df)} tweets")
         flash("; ".join(summary_lines), "success")
 
+        lgt9id-codex/criar-execução-automática-e-relatórios-dinâmicos
         if not formats:
             flash('Selecione ao menos um formato.', 'error')
+            
+ 4ibx2l-codex/criar-execução-automática-e-relatórios-dinâmicos
+        if not formats:
+            flash('Selecione ao menos um formato.', 'error')
+
+        if fmt == 'csv':
+            buf = io.StringIO()
+            df.to_csv(buf, index=False)
+            buf.seek(0)
+            return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
+                             mimetype='text/csv',
+                             as_attachment=True,
+                             download_name=f"{output_filename}.csv")
+        elif fmt == 'xml':
+            buf = io.StringIO()
+            df.to_xml(buf, index=False, root_name='tweets', row_name='tweet')
+            buf.seek(0)
+            return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
+                             mimetype='application/xml',
+                             as_attachment=True,
+                             download_name=f"{output_filename}.xml")
+        elif fmt == 'pdf':
+            pdf_bytes = df_to_pdf_bytes(df)
+            return send_file(io.BytesIO(pdf_bytes),
+                             mimetype='application/pdf',
+                             as_attachment=True,
+                             download_name=f"{output_filename}.pdf")
+        else:
+            flash('Formato desconhecido.', 'error')
+main
+main
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start_date=start_date, end_date=end_date, start_time=start_time,
                                    end_time=end_time, fmt_list=formats, output=output_filename)
