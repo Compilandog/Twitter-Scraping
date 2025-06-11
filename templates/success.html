@@ -3,6 +3,16 @@
 {% block content %}
 <div class="card p-4 bg-dark text-white text-center">
     <h1 class="h4 mb-3">Relatório gerado</h1>
-    <p>Seu download deve iniciar em instantes. Caso não começe, <a href="{{ url }}">clique aqui</a>.</p>
+    {% if summary %}
+    <p class="mb-3">
+        {% for line in summary %}
+            {{ line }}<br>
+        {% endfor %}
+    </p>
+    {% endif %}
+    <p>Seu download deve iniciar em instantes. Caso não comece, <a id="download-link" href="{{ url }}">clique aqui</a>.</p>
 </div>
+<script>
+document.getElementById('download-link').click();
+</script>
 {% endblock %}

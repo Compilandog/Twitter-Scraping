@@ -1,6 +1,11 @@
-body {background-color:#121212; color:#fff;}
-.card {background-color:#1e1e1e; box-shadow:0 2px 4px rgba(0,0,0,0.5); border-radius:6px;}
+body {background-color:#121212; color:#e0e0e0;}
+.card {background-color:#1e1e1e; color:#e0e0e0; box-shadow:0 2px 4px rgba(0,0,0,0.5); border-radius:6px;}
 .btn-primary {background-color:#3949ab; border-color:#3949ab;}
 .btn-primary:hover {background-color:#5c6bc0; border-color:#5c6bc0;}
 .navbar {padding-top:1rem; padding-bottom:1rem;}
-.form-control, .form-select {background-color:#333; color:#fff; border-color:#555;}
+.form-control, .form-select {background-color:#333; color:#e0e0e0; border-color:#555;}
+.form-control:focus, .form-select:focus {background-color:#333; color:#e0e0e0;}
+.text-white {color:#e0e0e0 !important;}
+.btn-outline-light {color:#e0e0e0; border-color:#777;}
+.btn-outline-light:hover {color:#e0e0e0; background-color:#3949ab; border-color:#3949ab;}
+.navbar-dark .navbar-nav .nav-link {color:#e0e0e0;}
