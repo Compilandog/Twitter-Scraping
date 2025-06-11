@@ -114,8 +114,7 @@ def lists_view():
         return redirect(url_for("lists_view", list=selected))
     if not selected and data:
         selected = next(iter(data.keys()))
-    profiles = data.get(selected, [])
-    return render_template("lists.html", lists=sorted(data.keys()), selected=selected, profiles=profiles)
+    return render_template("lists.html", lists=data, selected=selected)
 
 
 @app.route('/collect', methods=['GET', 'POST'])
@@ -127,29 +126,25 @@ def collect():
     selected = request.args.get('list') or request.form.get('list') or next(iter(data.keys()))
     if request.method == 'POST':
         list_name = request.form.get('list')
-        start_date = request.form.get('start')
-        start_time = request.form.get('start_time') or '00:00'
-        end_date = request.form.get('end')
-        end_time = request.form.get('end_time') or '23:59'
+        start_raw = request.form.get('start')
+        end_raw = request.form.get('end')
         formats = request.form.getlist('format')
         output_filename = request.form.get('output') or 'tweets'
 
-        since = f"{start_date}_{start_time}"
-        until = f"{end_date}_{end_time}"
-
         try:
-            dt.datetime.fromisoformat(f"{start_date}T{start_time}")
-            end_dt = dt.datetime.fromisoformat(f"{end_date}T{end_time}")
-        except ValueError:
+            start_dt = dt.datetime.fromisoformat(start_raw)
+            end_dt = dt.datetime.fromisoformat(end_raw)
+        except (ValueError, TypeError):
             flash('Datas em formato invalido.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
-                                   start_date=start_date, end_date=end_date, start_time=start_time,
-                                   end_time=end_time, fmt_list=formats, output=output_filename)
-        if end_dt < dt.datetime.fromisoformat(f"{start_date}T{start_time}"):
+                                   start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
+        if end_dt < start_dt:
             flash('A data de fim nao pode ser menor que a de inicio.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
-                                   start_date=start_date, end_date=end_date, start_time=start_time,
-                                   end_time=end_time, fmt_list=formats, output=output_filename)
+                                   start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
+
+        since = start_raw.replace('T', '_')
+        until = end_raw.replace('T', '_')
 
         try:
             df = collect_tweets(data[list_name], since, until)
@@ -169,8 +164,7 @@ def collect():
         if not formats:
             flash('Selecione ao menos um formato.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
-                                   start_date=start_date, end_date=end_date, start_time=start_time,
-                                   end_time=end_time, fmt_list=formats, output=output_filename)
+                                   start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
 
         if len(formats) == 1:
             fmt = formats[0]
@@ -217,7 +211,7 @@ def collect():
                              mimetype='application/zip',
                              as_attachment=True,
                              download_name=f"{output_filename}.zip")
-    return render_template('collect.html', lists=sorted(data.keys()), selected=selected, fmt_list=[])
+    return render_template('collect.html', lists=sorted(data.keys()), selected=selected, fmt_list=[], start=None, end=None)
 
 
 if __name__ == '__main__':

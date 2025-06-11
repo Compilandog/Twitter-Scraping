@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Erro{% endblock %}
 {% block content %}
-<div class="card p-4 bg-white text-center">
+<div class="card p-4 bg-dark text-white text-center">
     <h1 class="h4 mb-3">Ocorreu um problema</h1>
     <p>{{ message }}</p>
     <a href="{{ url_for('collect') }}" class="btn btn-secondary mt-2">Voltar</a>

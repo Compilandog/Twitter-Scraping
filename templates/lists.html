@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Listas{% endblock %}
 {% block content %}
-<div class="card p-4 bg-white">
+<div class="card p-4 bg-dark text-white">
 <h1 class="h4 mb-4">Gerenciar Listas</h1>
 <form action="{{ url_for('lists_view') }}" method="post" class="mb-3 d-flex">
     <input type="hidden" name="action" value="add_list">
@@ -9,43 +9,47 @@
     <button type="submit" class="btn btn-primary">Criar Lista</button>
 </form>
 {% if lists %}
-<form method="get" action="{{ url_for('lists_view') }}" class="mb-3">
-    <label class="form-label">Selecionar lista:
-        <select name="list" onchange="this.form.submit()" class="form-select">
-            {% for l in lists %}
-            <option value="{{ l }}" {% if l == selected %}selected{% endif %}>{{ l }}</option>
+<div class="accordion" id="listsAccordion">
+{% for name, profiles in lists.items() %}
+<div class="accordion-item bg-dark text-white">
+    <h2 class="accordion-header" id="heading{{ loop.index }}">
+        <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ 'true' if name == selected else 'false' }}" aria-controls="collapse{{ loop.index }}">
+            {{ name }} ({{ profiles|length }} perfis)
+        </button>
+    </h2>
+    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if name == selected %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#listsAccordion">
+        <div class="accordion-body">
+            {% if profiles %}
+            <div class="mb-3">
+            {% for p in profiles %}
+                <form action="{{ url_for('lists_view', list=name) }}" method="post" class="d-inline">
+                    <input type="hidden" name="action" value="remove_profile">
+                    <input type="hidden" name="listname" value="{{ name }}">
+                    <input type="hidden" name="profile" value="{{ p }}">
+                    <span class="badge bg-secondary me-1 mb-1">
+                        @{{ p }}
+                        <button type="submit" class="btn-close btn-close-white btn-sm ms-1" aria-label="Remove"></button>
+                    </span>
+                </form>
             {% endfor %}
-        </select>
-    </label>
-</form>
-{% if selected %}
-<h2 class="h5">Perfis de {{ selected }}</h2>
-<ul class="list-group mb-3">
-    {% for p in profiles %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        @{{ p }}
-        <form action="{{ url_for('lists_view', list=selected) }}" method="post" class="ms-3">
-            <input type="hidden" name="action" value="remove_profile">
-            <input type="hidden" name="listname" value="{{ selected }}">
-            <input type="hidden" name="profile" value="{{ p }}">
-            <button type="submit" class="btn btn-sm btn-danger">Remover</button>
-        </form>
-    </li>
-    {% endfor %}
-</ul>
-<form action="{{ url_for('lists_view', list=selected) }}" method="post" class="d-flex mb-3">
-    <input type="hidden" name="action" value="add_profile">
-    <input type="hidden" name="listname" value="{{ selected }}">
-    <input type="text" name="profile" placeholder="novo perfil" class="form-control me-2">
-    <button type="submit" class="btn btn-primary">Adicionar</button>
-</form>
-<form action="{{ url_for('lists_view') }}" method="post" onsubmit="return confirm('Excluir esta lista?');" class="mb-3">
-    <input type="hidden" name="action" value="delete_list">
-    <input type="hidden" name="listname" value="{{ selected }}">
-    <button type="submit" class="btn btn-danger">Excluir lista</button>
-</form>
+            </div>
+            {% endif %}
+            <form action="{{ url_for('lists_view', list=name) }}" method="post" class="d-flex mb-3">
+                <input type="hidden" name="action" value="add_profile">
+                <input type="hidden" name="listname" value="{{ name }}">
+                <input type="text" name="profile" placeholder="novo perfil" class="form-control me-2">
+                <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+            <form action="{{ url_for('lists_view') }}" method="post" onsubmit="return confirm('Excluir esta lista?');" class="mb-3">
+                <input type="hidden" name="action" value="delete_list">
+                <input type="hidden" name="listname" value="{{ name }}">
+                <button type="submit" class="btn btn-danger">Excluir lista</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
 {% endif %}
-{% endif %}
-<p><a href="{{ url_for('collect', list=selected) }}" class="btn btn-primary">Solicitar Relatório</a></p>
 </div>
 {% endblock %}
