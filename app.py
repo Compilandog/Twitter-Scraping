@@ -10,6 +10,7 @@ from flask import (
 import datetime as dt
 import pandas as pd
 import snscrape.modules.twitter as snt
+from snscrape.base import ScraperException
 import os
 import json
 from fpdf import FPDF
@@ -152,8 +153,8 @@ def collect():
 
         try:
             df = collect_tweets(data[list_name], since, until)
-        except snt.base.ScraperException:
-            logging.error("ScraperException\n%s", traceback.format_exc())
+        except ScraperException as e:
+            app.logger.error(f"Erro no snscrape: {e}")
             return render_template('error.html', message='Não foi possível coletar tweets neste momento. Tente novamente mais tarde.')
 
         if df.empty:
@@ -164,6 +165,10 @@ def collect():
             summary_lines.append(f"{user}: {count} links")
         summary_lines.append(f"Total: {len(df)} tweets")
         flash("; ".join(summary_lines), "success")
+
+codex/criar-execução-automática-e-relatórios-dinâmicos
+        if not formats:
+            flash('Selecione ao menos um formato.', 'error')
 
         lgt9id-codex/criar-execução-automática-e-relatórios-dinâmicos
         if not formats:
@@ -197,6 +202,7 @@ def collect():
                              download_name=f"{output_filename}.pdf")
         else:
             flash('Formato desconhecido.', 'error')
+main
 main
 main
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
