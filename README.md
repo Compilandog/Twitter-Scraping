@@ -23,6 +23,23 @@ o navegador no endereço encontrado.
 
 Caso deseje iniciar manualmente, ative o ambiente virtual e execute `python app.py`.
 
+### Coleta de Tweets resiliente
+
+O Twitter costuma alterar com frequência os seus endpoints e isso pode
+resultar em erros `404` ou bloqueios inesperados durante a coleta. A função
+`collect_tweets` deste projeto tenta contornar esse problema de forma
+automática. Ela executa três estratégias em sequência:
+
+1. **`snscrape` no modo padrão (GraphQL)** – mais rápido, porém suscetível a
+   mudanças repentinas.
+2. **`snscrape` usando parsing de HTML** – basta desativar o GraphQL para que
+   o scraping ocorra pela versão web do Twitter.
+3. **`twint` como último recurso** – caso a biblioteca esteja instalada, ela é
+   usada para extrair os tweets diretamente do HTML.
+
+Desse modo, se uma abordagem falhar, outra é tentada sem que o usuário
+perceba, aumentando as chances de sucesso.
+
 ### Empacotamento
 
 **macOS**

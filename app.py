@@ -39,17 +39,72 @@ def save_lists(data):
 
 
 def collect_tweets(profiles, since, until):
+    """Collect tweets handling Twitter API changes gracefully.
+
+    This function first tries the default ``snscrape`` GraphQL endpoint. If it
+    fails (for example returning HTTP 404 when GraphQL is blocked), it falls
+    back to the legacy HTML scraping mode. As a last resort it attempts to use
+    ``twint`` when that package is available. Only the successfully retrieved
+    tweets are returned in a DataFrame.
+    """
+
     records = []
     for user in profiles:
         query = f"from:{user} since:{since} until:{until}"
-        for t in snt.TwitterSearchScraper(query).get_items():
+        scraper = snt.TwitterSearchScraper(query)
+
+        def _append(tweet):
             records.append(
                 {
-                    "hora": t.date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "hora": tweet.date.strftime("%Y-%m-%d %H:%M:%S"),
                     "usuario": f"@{user}",
-                    "link": f"https://twitter.com/{user}/status/{t.id}",
+                    "link": f"https://twitter.com/{user}/status/{tweet.id}",
                 }
             )
+
+        try:
+            for t in scraper.get_items():
+                _append(t)
+            continue
+        except ScraperException as e:
+            logging.warning("snscrape default mode failed for %s: %s", user, e)
+
+        # Second attempt: disable GraphQL usage and parse HTML instead
+        try:
+            scraper.useScrapeApi = False  # type: ignore[attr-defined]
+            for t in scraper.get_items():
+                _append(t)
+            continue
+        except ScraperException as e:
+            logging.warning("snscrape HTML mode failed for %s: %s", user, e)
+
+        # Final attempt using twint if installed
+        try:
+            import nest_asyncio
+            import twint
+
+            nest_asyncio.apply()
+            c = twint.Config()
+            c.Username = user
+            c.Since = since.replace("_", " ")
+            c.Until = until.replace("_", " ")
+            c.Pandas = True
+            twint.run.Search(c)
+            df_twint = twint.storage.panda.Tweets_df
+            if df_twint is not None:
+                for _, row in df_twint.iterrows():
+                    records.append(
+                        {
+                            "hora": row["date"],
+                            "usuario": f"@{user}",
+                            "link": row["link"],
+                        }
+                    )
+            # cleanup global dataframe for the next run
+            twint.storage.panda.clean()
+        except Exception as e:  # noqa: BLE001
+            logging.error("twint fallback failed for %s: %s", user, e)
+
     return pd.DataFrame(records)
 
 
