@@ -1,5 +1,5 @@
 Flask
-snscrape
+snscrape>=0.7.8
 pandas
 fpdf
 nest_asyncio
