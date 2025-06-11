@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Início{% endblock %}
+{% block content %}
+<div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('lists_view') }}" class="btn btn-primary btn-lg">Gerenciar Listas</a>
+    <a href="{{ url_for('collect') }}" class="btn btn-primary btn-lg">Gerar Relatório</a>
+</div>
+{% endblock %}

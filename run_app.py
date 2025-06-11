@@ -17,5 +17,7 @@ def find_port(start=5000, limit=5100):
 
 if __name__ == "__main__":
     port = find_port()
-    webbrowser.open(f"http://127.0.0.1:{port}")
+    url = f"http://127.0.0.1:{port}"
+    print(f"Starting server on {url}")
+    webbrowser.open(url)
     app.run(host="0.0.0.0", port=port)
