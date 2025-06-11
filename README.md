@@ -16,7 +16,8 @@ pip install -r requirements.txt
 Para iniciar rapidamente no macOS, basta **dar dois cliques** em `start.command`.
 Ele cria um ambiente virtual, instala as dependências e abre o navegador
 automaticamente. Em outros sistemas, execute `./run.sh` manualmente ou
-`python run_app.py`.
+`python run_app.py`. Esse script procura uma porta livre a partir da 5000 e abre
+o navegador no endereço encontrado.
 
 ## Uso
 
@@ -40,8 +41,10 @@ python setup_pyinstaller.py
 
 O executável `.exe` será criado em `dist/`.
 
-Abra o endereço exibido no terminal (por padrão `http://localhost:5000`; se a
-porta estiver em uso será escolhida a próxima disponível). Primeiro crie uma ou
-mais listas de perfis na tela **Listas**. Em seguida, em **Solicitar Relatório**,
-escolha a lista desejada, defina o período (com data e hora) e o formato do
-arquivo. O arquivo é oferecido para download automaticamente.
+Ao executar o aplicativo, o servidor Flask será iniciado e o navegador será
+aberto automaticamente no endereço disponível. A página inicial exibe dois
+botões: **Gerenciar Listas** e **Gerar Relatório**. Primeiro crie uma ou mais
+listas de perfis acessando **Gerenciar Listas**. Em seguida, em **Gerar
+Relatório**, escolha a lista desejada, defina o período (com data e hora) e o
+formato do arquivo. O relatório é oferecido para download automaticamente e um
+resumo da coleta é exibido na própria página.

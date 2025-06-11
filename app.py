@@ -71,7 +71,7 @@ def df_to_pdf_bytes(df):
 
 @app.route('/')
 def index():
-    return redirect(url_for('lists_view'))
+    return render_template('home.html')
 
 
 @app.route('/lists', methods=['GET', 'POST'])
@@ -157,6 +157,12 @@ def collect():
 
         if df.empty:
             return render_template('error.html', message='Nenhum tweet encontrado para o período selecionado.')
+
+        summary_lines = []
+        for user, count in df['usuario'].value_counts().items():
+            summary_lines.append(f"{user}: {count} links")
+        summary_lines.append(f"Total: {len(df)} tweets")
+        flash("; ".join(summary_lines), "success")
 
         if fmt == 'csv':
             buf = io.StringIO()
