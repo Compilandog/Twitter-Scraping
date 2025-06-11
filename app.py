@@ -17,6 +17,7 @@ import json
 from fpdf import FPDF
 import logging
 import traceback
+import re
 import io
 import zipfile
 import uuid
@@ -132,12 +133,17 @@ def lists_view():
         action = request.form.get("action")
         if action == "add_list":
             name = request.form["new_list"].strip()
-            if name and name not in data:
+            if not re.fullmatch(r"[\w-]{1,30}", name):
+                flash(
+                    "Nome inválido. Use letras, números, hífen ou sublinhado (até 30 caracteres).",
+                    "error",
+                )
+            elif name in data:
+                flash("Nome inválido ou já existe.", "error")
+            else:
                 data[name] = []
                 selected = name
                 flash("Lista criada.", "success")
-            else:
-                flash("Nome inválido ou já existe.", "error")
         elif action == "delete_list":
             name = request.form["listname"]
             if name in data:
@@ -147,7 +153,11 @@ def lists_view():
         elif action == "add_profile":
             name = request.form["listname"]
             profile = request.form["profile"].strip().lstrip("@")
-            if profile and profile not in data.get(name, []):
+            if not re.fullmatch(r"[A-Za-z0-9_]{1,15}", profile):
+                flash("Perfil inválido.", "error")
+            elif profile in data.get(name, []):
+                flash("Perfil já adicionado.", "error")
+            else:
                 data[name].append(profile)
                 flash("Perfil adicionado.", "success")
             selected = name
@@ -179,6 +189,21 @@ def collect():
         formats = request.form.getlist('format')
         output_filename = request.form.get('output') or 'tweets'
 
+        if list_name not in data:
+            flash('Lista inválida.', 'error')
+            return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
+                                   start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
+
+        if not data[list_name]:
+            flash('A lista selecionada está vazia.', 'error')
+            return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
+                                   start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
+
+        if not re.fullmatch(r'[\w-]{1,50}', output_filename):
+            flash('Nome de arquivo inválido.', 'error')
+            return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
+                                   start=start_raw, end=end_raw, fmt_list=formats, output='tweets')
+
         try:
             start_dt = dt.datetime.fromisoformat(start_raw)
             end_dt = dt.datetime.fromisoformat(end_raw)
@@ -186,8 +211,13 @@ def collect():
             flash('Datas em formato invalido.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
+        now = dt.datetime.now()
         if end_dt < start_dt:
             flash('A data de fim nao pode ser menor que a de inicio.', 'error')
+            return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
+                                   start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
+        if end_dt > now or start_dt > now:
+            flash('Datas no futuro não são permitidas.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start=start_raw, end=end_raw, fmt_list=formats, output=output_filename)
 
