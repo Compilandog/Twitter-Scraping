@@ -10,6 +10,7 @@ from flask import (
 import datetime as dt
 import pandas as pd
 import snscrape.modules.twitter as snt
+snt.TwitterSearchScraper.useScrapeApi = False
 from snscrape.base import ScraperException
 import os
 import json
@@ -43,11 +44,10 @@ def save_lists(data):
 def collect_tweets(profiles, since, until):
     """Collect tweets handling Twitter API changes gracefully.
 
-    This function first tries the default ``snscrape`` GraphQL endpoint. If it
-    fails (for example returning HTTP 404 when GraphQL is blocked), it falls
-    back to the legacy HTML scraping mode. As a last resort it attempts to use
-    ``twint`` when that package is available. Only the successfully retrieved
-    tweets are returned in a DataFrame.
+    ``snscrape`` is configured to skip the internal GraphQL API and parse the
+    public HTML instead (``useScrapeApi = False``). If that also fails, the
+    function attempts to use ``twint`` when it is available. Only the
+    successfully retrieved tweets are returned in a DataFrame.
     """
 
     records = []
@@ -65,15 +65,6 @@ def collect_tweets(profiles, since, until):
             )
 
         try:
-            for t in scraper.get_items():
-                _append(t)
-            continue
-        except ScraperException as e:
-            logging.warning("snscrape default mode failed for %s: %s", user, e)
-
-        # Second attempt: disable GraphQL usage and parse HTML instead
-        try:
-            scraper.useScrapeApi = False  # type: ignore[attr-defined]
             for t in scraper.get_items():
                 _append(t)
             continue

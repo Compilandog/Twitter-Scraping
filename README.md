@@ -13,6 +13,13 @@ Esta aplicação web permite criar **listas de perfis** do Twitter e gerar relat
 pip install -r requirements.txt
 ```
 
+O arquivo `requirements.txt` já exige `snscrape >= 0.7.8`. Para contar com o
+fallback via **Twint**, instale também:
+
+```bash
+pip install git+https://github.com/twintproject/twint.git@origin/master
+```
+
 Para iniciar rapidamente no macOS, basta **dar dois cliques** em `start.command`.
 Ele cria um ambiente virtual, instala as dependências e abre o navegador
 automaticamente. Em outros sistemas, execute `./run.sh` manualmente ou
@@ -28,13 +35,11 @@ Caso deseje iniciar manualmente, ative o ambiente virtual e execute `python app.
 O Twitter costuma alterar com frequência os seus endpoints e isso pode
 resultar em erros `404` ou bloqueios inesperados durante a coleta. A função
 `collect_tweets` deste projeto tenta contornar esse problema de forma
-automática. Ela executa três estratégias em sequência:
+automática. Ela executa duas estratégias em sequência:
 
-1. **`snscrape` no modo padrão (GraphQL)** – mais rápido, porém suscetível a
-   mudanças repentinas.
-2. **`snscrape` usando parsing de HTML** – basta desativar o GraphQL para que
-   o scraping ocorra pela versão web do Twitter.
-3. **`twint` como último recurso** – caso a biblioteca esteja instalada, ela é
+1. **`snscrape` em modo HTML** – o aplicativo força `useScrapeApi = False`,
+   ignorando o endpoint GraphQL que costuma retornar `404`.
+2. **`twint` como último recurso** – caso a biblioteca esteja instalada, ela é
    usada para extrair os tweets diretamente do HTML.
 
 Desse modo, se uma abordagem falhar, outra é tentada sem que o usuário
