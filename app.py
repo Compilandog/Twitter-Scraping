@@ -16,6 +16,7 @@ from fpdf import FPDF
 import logging
 import traceback
 import io
+import zipfile
 
 app = Flask(__name__)
 app.secret_key = 'change-this-secret'
@@ -129,7 +130,7 @@ def collect():
         start_time = request.form.get('start_time') or '00:00'
         end_date = request.form.get('end')
         end_time = request.form.get('end_time') or '23:59'
-        fmt = request.form.get('format')
+        formats = request.form.getlist('format')
         output_filename = request.form.get('output') or 'tweets'
 
         since = f"{start_date}_{start_time}"
@@ -142,12 +143,12 @@ def collect():
             flash('Datas em formato invalido.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start_date=start_date, end_date=end_date, start_time=start_time,
-                                   end_time=end_time, fmt=fmt, output=output_filename)
+                                   end_time=end_time, fmt_list=formats, output=output_filename)
         if end_dt < dt.datetime.fromisoformat(f"{start_date}T{start_time}"):
             flash('A data de fim nao pode ser menor que a de inicio.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start_date=start_date, end_date=end_date, start_time=start_time,
-                                   end_time=end_time, fmt=fmt, output=output_filename)
+                                   end_time=end_time, fmt_list=formats, output=output_filename)
 
         try:
             df = collect_tweets(data[list_name], since, until)
@@ -164,34 +165,58 @@ def collect():
         summary_lines.append(f"Total: {len(df)} tweets")
         flash("; ".join(summary_lines), "success")
 
-        if fmt == 'csv':
-            buf = io.StringIO()
-            df.to_csv(buf, index=False)
-            buf.seek(0)
-            return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
-                             mimetype='text/csv',
-                             as_attachment=True,
-                             download_name=f"{output_filename}.csv")
-        elif fmt == 'xml':
-            buf = io.StringIO()
-            df.to_xml(buf, index=False, root_name='tweets', row_name='tweet')
-            buf.seek(0)
-            return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
-                             mimetype='application/xml',
-                             as_attachment=True,
-                             download_name=f"{output_filename}.xml")
-        elif fmt == 'pdf':
-            pdf_bytes = df_to_pdf_bytes(df)
-            return send_file(io.BytesIO(pdf_bytes),
-                             mimetype='application/pdf',
-                             as_attachment=True,
-                             download_name=f"{output_filename}.pdf")
-        else:
-            flash('Formato desconhecido.', 'error')
+        if not formats:
+            flash('Selecione ao menos um formato.', 'error')
             return render_template('collect.html', lists=sorted(data.keys()), selected=list_name,
                                    start_date=start_date, end_date=end_date, start_time=start_time,
-                                   end_time=end_time, fmt=fmt, output=output_filename)
-    return render_template('collect.html', lists=sorted(data.keys()), selected=selected)
+                                   end_time=end_time, fmt_list=formats, output=output_filename)
+
+        if len(formats) == 1:
+            fmt = formats[0]
+            if fmt == 'csv':
+                buf = io.StringIO()
+                df.to_csv(buf, index=False)
+                buf.seek(0)
+                return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
+                                 mimetype='text/csv',
+                                 as_attachment=True,
+                                 download_name=f"{output_filename}.csv")
+            elif fmt == 'xml':
+                buf = io.StringIO()
+                df.to_xml(buf, index=False, root_name='tweets', row_name='tweet')
+                buf.seek(0)
+                return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
+                                 mimetype='application/xml',
+                                 as_attachment=True,
+                                 download_name=f"{output_filename}.xml")
+            elif fmt == 'pdf':
+                pdf_bytes = df_to_pdf_bytes(df)
+                return send_file(io.BytesIO(pdf_bytes),
+                                 mimetype='application/pdf',
+                                 as_attachment=True,
+                                 download_name=f"{output_filename}.pdf")
+        else:
+            zip_buf = io.BytesIO()
+            with zipfile.ZipFile(zip_buf, 'w') as zf:
+                for fmt in formats:
+                    if fmt == 'csv':
+                        tmp = io.StringIO()
+                        df.to_csv(tmp, index=False)
+                        tmp.seek(0)
+                        zf.writestr(f"{output_filename}.csv", tmp.getvalue())
+                    elif fmt == 'xml':
+                        tmp = io.StringIO()
+                        df.to_xml(tmp, index=False, root_name='tweets', row_name='tweet')
+                        tmp.seek(0)
+                        zf.writestr(f"{output_filename}.xml", tmp.getvalue())
+                    elif fmt == 'pdf':
+                        zf.writestr(f"{output_filename}.pdf", df_to_pdf_bytes(df))
+            zip_buf.seek(0)
+            return send_file(zip_buf,
+                             mimetype='application/zip',
+                             as_attachment=True,
+                             download_name=f"{output_filename}.zip")
+    return render_template('collect.html', lists=sorted(data.keys()), selected=selected, fmt_list=[])
 
 
 if __name__ == '__main__':

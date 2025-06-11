@@ -1,6 +1,6 @@
 # Tweet Collector Web App
 
-Esta aplicação web permite criar **listas de perfis** do Twitter e gerar relatórios em CSV, XML ou PDF com os tweets coletados em um intervalo de datas.
+Esta aplicação web permite criar **listas de perfis** do Twitter e gerar relatórios em CSV, XML e PDF com os tweets coletados em um intervalo de datas. É possível escolher mais de um formato ao mesmo tempo.
 
 ## Requisitos
 
@@ -45,6 +45,7 @@ Ao executar o aplicativo, o servidor Flask será iniciado e o navegador será
 aberto automaticamente no endereço disponível. A página inicial exibe dois
 botões: **Gerenciar Listas** e **Gerar Relatório**. Primeiro crie uma ou mais
 listas de perfis acessando **Gerenciar Listas**. Em seguida, em **Gerar
-Relatório**, escolha a lista desejada, defina o período (com data e hora) e o
-formato do arquivo. O relatório é oferecido para download automaticamente e um
-resumo da coleta é exibido na própria página.
+Relatório**, escolha a lista desejada, defina o período (com data e hora) e
+marque os formatos desejados. Se mais de um formato for selecionado, um arquivo
+ZIP com todos eles será oferecido para download. Um resumo da coleta é exibido
+na própria página.
