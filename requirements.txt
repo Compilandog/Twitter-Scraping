@@ -2,3 +2,4 @@ Flask
 snscrape
 pandas
 fpdf
+nest_asyncio
