@@ -13,7 +13,7 @@ Esta aplicação web permite criar **listas de perfis** do Twitter e gerar relat
 pip install -r requirements.txt
 ```
 
-O arquivo `requirements.txt` já exige `snscrape >= 0.7.8`. Para contar com o
+O arquivo `requirements.txt` já exige `snscrape >= 0.7.0.20230622`. Para contar com o
 fallback via **Twint**, instale também:
 
 ```bash
