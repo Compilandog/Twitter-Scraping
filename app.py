@@ -18,10 +18,12 @@ import logging
 import traceback
 import io
 import zipfile
+import uuid
 
 app = Flask(__name__)
 app.secret_key = 'change-this-secret'
 LISTS_FILE = 'lists.json'
+DOWNLOADS = {}
 
 logging.basicConfig(level=logging.INFO)
 
@@ -214,7 +216,6 @@ def collect():
         for user, count in df['usuario'].value_counts().items():
             summary_lines.append(f"{user}: {count} links")
         summary_lines.append(f"Total: {len(df)} tweets")
-        flash("; ".join(summary_lines), "success")
 
         if not formats:
             flash('Selecione ao menos um formato.', 'error')
@@ -227,24 +228,20 @@ def collect():
                 buf = io.StringIO()
                 df.to_csv(buf, index=False)
                 buf.seek(0)
-                return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
-                                 mimetype='text/csv',
-                                 as_attachment=True,
-                                 download_name=f"{output_filename}.csv")
+                data_bytes = buf.getvalue().encode('utf-8')
+                mime = 'text/csv'
+                name = f"{output_filename}.csv"
             elif fmt == 'xml':
                 buf = io.StringIO()
                 df.to_xml(buf, index=False, root_name='tweets', row_name='tweet')
                 buf.seek(0)
-                return send_file(io.BytesIO(buf.getvalue().encode('utf-8')),
-                                 mimetype='application/xml',
-                                 as_attachment=True,
-                                 download_name=f"{output_filename}.xml")
+                data_bytes = buf.getvalue().encode('utf-8')
+                mime = 'application/xml'
+                name = f"{output_filename}.xml"
             elif fmt == 'pdf':
-                pdf_bytes = df_to_pdf_bytes(df)
-                return send_file(io.BytesIO(pdf_bytes),
-                                 mimetype='application/pdf',
-                                 as_attachment=True,
-                                 download_name=f"{output_filename}.pdf")
+                data_bytes = df_to_pdf_bytes(df)
+                mime = 'application/pdf'
+                name = f"{output_filename}.pdf"
         else:
             zip_buf = io.BytesIO()
             with zipfile.ZipFile(zip_buf, 'w') as zf:
@@ -262,11 +259,23 @@ def collect():
                     elif fmt == 'pdf':
                         zf.writestr(f"{output_filename}.pdf", df_to_pdf_bytes(df))
             zip_buf.seek(0)
-            return send_file(zip_buf,
-                             mimetype='application/zip',
-                             as_attachment=True,
-                             download_name=f"{output_filename}.zip")
+            data_bytes = zip_buf.getvalue()
+            mime = 'application/zip'
+            name = f"{output_filename}.zip"
+
+        file_id = str(uuid.uuid4())
+        DOWNLOADS[file_id] = (data_bytes, mime, name)
+        return render_template('success.html', url=url_for('download', file_id=file_id), summary=summary_lines)
     return render_template('collect.html', lists=sorted(data.keys()), selected=selected, fmt_list=[], start=None, end=None)
+
+
+@app.route('/download/<file_id>')
+def download(file_id):
+    entry = DOWNLOADS.pop(file_id, None)
+    if not entry:
+        return render_template('error.html', message='Arquivo não encontrado.')
+    data, mime, name = entry
+    return send_file(io.BytesIO(data), mimetype=mime, as_attachment=True, download_name=name)
 
 
 if __name__ == '__main__':
