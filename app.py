@@ -9,9 +9,7 @@ from flask import (
 )
 import datetime as dt
 import pandas as pd
-import snscrape.modules.twitter as snt
-snt.TwitterSearchScraper.useScrapeApi = False
-from snscrape.base import ScraperException
+from mcp_client import run_playwright_flow
 import os
 import json
 from fpdf import FPDF
@@ -42,62 +40,24 @@ def save_lists(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def collect_tweets(profiles, since, until):
-    """Collect tweets handling Twitter API changes gracefully.
-
-    ``snscrape`` is configured to skip the internal GraphQL API and parse the
-    public HTML instead (``useScrapeApi = False``). If that also fails, the
-    function attempts to use ``twint`` when it is available. Only the
-    successfully retrieved tweets are returned in a DataFrame.
-    """
+def collect_tweets(profiles, since, until, limit=10):
+    """Collect tweets using Playwright MCP."""
 
     records = []
     for user in profiles:
-        query = f"from:{user} since:{since} until:{until}"
-        scraper = snt.TwitterSearchScraper(query)
-
-        def _append(tweet):
+        try:
+            tweets = run_playwright_flow(user, limit)
+        except Exception as e:  # noqa: BLE001
+            logging.error("MCP scraping failed for %s: %s", user, e)
+            continue
+        for text in tweets:
             records.append(
                 {
-                    "hora": tweet.date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "hora": dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "usuario": f"@{user}",
-                    "link": f"https://twitter.com/{user}/status/{tweet.id}",
+                    "link": text,
                 }
             )
-
-        try:
-            for t in scraper.get_items():
-                _append(t)
-            continue
-        except ScraperException as e:
-            logging.warning("snscrape HTML mode failed for %s: %s", user, e)
-
-        # Final attempt using twint if installed
-        try:
-            import nest_asyncio
-            import twint
-
-            nest_asyncio.apply()
-            c = twint.Config()
-            c.Username = user
-            c.Since = since.replace("_", " ")
-            c.Until = until.replace("_", " ")
-            c.Pandas = True
-            twint.run.Search(c)
-            df_twint = twint.storage.panda.Tweets_df
-            if df_twint is not None:
-                for _, row in df_twint.iterrows():
-                    records.append(
-                        {
-                            "hora": row["date"],
-                            "usuario": f"@{user}",
-                            "link": row["link"],
-                        }
-                    )
-            # cleanup global dataframe for the next run
-            twint.storage.panda.clean()
-        except Exception as e:  # noqa: BLE001
-            logging.error("twint fallback failed for %s: %s", user, e)
 
     return pd.DataFrame(records)
 
@@ -226,8 +186,8 @@ def collect():
 
         try:
             df = collect_tweets(data[list_name], since, until)
-        except ScraperException as e:
-            app.logger.error(f"Erro no snscrape: {e}")
+        except Exception as e:  # noqa: BLE001
+            app.logger.error(f"Erro na coleta: {e}")
             return render_template('error.html', message='Não foi possível coletar tweets neste momento. Tente novamente mais tarde.')
 
         if df.empty:

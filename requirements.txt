@@ -3,3 +3,4 @@ snscrape>=0.7.0.20230622
 pandas
 fpdf
 nest_asyncio
+requests>=2.31
